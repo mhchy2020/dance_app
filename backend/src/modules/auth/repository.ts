@@ -1,30 +1,20 @@
-import bcrypt from 'bcrypt';
 import { db } from '../../config/supabase.ts';
-import { ApiError } from '../../utils/ApiError.ts';
-
-type userType = {
-    id: string,
-    email: string, 
-    password: string
-}
-
-const users: userType[] = [];
 
 export const authRepository = {
-    async createUser(id: string, email: string, hashed: string){
+    async createUser(id: string, name: string, email: string, hashed: string){
       // store user to db
         const query = `
-        INSERT INTO users (id, email, password_hash)
-        VALUES ($1, $2, $3)
-        RETURNING id, email, created_at
+        INSERT INTO users (id, name, email, password_hash)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id, name, email
         `
-        const result = await db.query(query, [id, email, hashed]);
+        const result = await db.query(query, [id, name, email, hashed]);
         return result.rows[0];
     },
 
     async findByEmail(email: string){
         const query = `
-        SELECT id, email, password_hash
+        SELECT id, email, password_hash, name
         FROM users 
         WHERE email = $1
         LIMIT 1   

@@ -1,5 +1,7 @@
 import { Stack, Tabs } from "expo-router";
 import Ionicons from "@react-native-vector-icons/ionicons";
+import { COLORS } from "@/constants/color";
+import { View } from "react-native";
 
 export default function TabLayout() {
   return (

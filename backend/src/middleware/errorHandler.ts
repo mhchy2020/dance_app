@@ -5,10 +5,12 @@ export const errorHandler =  ( err: Error, req: Request, res: Response, next: Ne
     console.error(err);
 
     let statusCode: number = 500;
+    let code: string | undefined;
     let message: string = 'Internal Server Error';
 
     if(err instanceof ApiError){
         statusCode = err.statusCode;
+        code = err.code;
         message = err.message;
     }
     else if (err instanceof Error) {
@@ -18,6 +20,7 @@ export const errorHandler =  ( err: Error, req: Request, res: Response, next: Ne
     res.status(statusCode).json({
         success: false,
         statusCode: statusCode,
-        message
+        message,
+        ...(code && {code})
     });
 }

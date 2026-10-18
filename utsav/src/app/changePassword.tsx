@@ -67,17 +67,16 @@ export default function ChangePassword() {
         },
       });
       console.log("[/auth/password]", response.data);
-      //store access and refresh token
-      storeTokens({
-        accessToken: response.data.accessToken,
-        refreshToken: response.data.refreshToken,
-      });
       router.back();
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.code === "REFRESH_TOKEN_EXPIRED") {
           handleModalShow();
         }
+        error.current.push(err.message);
+        setIsVisible(true);
+      } else {
+        console.log("Unexcepted error", err);
       }
     }
   };

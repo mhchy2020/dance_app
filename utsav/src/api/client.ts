@@ -1,5 +1,5 @@
 import { ApiError } from "@/utils/ApiError";
-import { getToken } from "@/utils/getToken";
+import { getToken, storeTokens } from "@/utils/getToken";
 
 const apiURL = "http://10.0.2.2:3000/api";
 
@@ -65,10 +65,22 @@ export const apiRequest = async <T>(
       console.log("session expired");
       throw new ApiError(401, data.message, data.code);
     }
+
+    // store new access token and a rotated refresh token
+    storeTokens({
+      accessToken: data.accessToken,
+      refreshToken: data.refreshToken,
+    });
+
+    //call the api again
+    options = { ...options, token: data.accessToken };
+    response = await fetchCall(`${apiURL}${route}`, options);
+    data = await response.json();
+    console.log(`${apiURL}/${route}`, data);
   }
 
   if (!response.ok) {
-    throw new Error(data.message);
+    throw new ApiError(401, data.message);
   }
 
   return data;

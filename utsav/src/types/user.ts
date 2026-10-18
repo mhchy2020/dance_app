@@ -26,6 +26,10 @@ export type LoginData = {
 
 export type RegisterData = {
   message: string;
+  tokens: {
+    accessToken: string, 
+    refreshToken: string
+  }
   user: User;
 };
 

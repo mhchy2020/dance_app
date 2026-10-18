@@ -17,16 +17,18 @@ import Animated, {
 } from "react-native-reanimated";
 
 type props = {
+  index: number;
   expanded: boolean;
-  setExpanded: Dispatch<SetStateAction<boolean>>;
+  setActiveIndex: Dispatch<SetStateAction<number[]>>;
   input: string | undefined;
   setInput: Dispatch<SetStateAction<string | undefined>>;
   field?: string;
 };
 
 export default function ExpandableView({
+  index,
   expanded,
-  setExpanded,
+  setActiveIndex,
   input,
   setInput,
 }: props) {
@@ -56,7 +58,7 @@ export default function ExpandableView({
         <View style={styles.buttonContainer}>
           <Pressable
             onPress={() => {
-              setExpanded(!expanded);
+              setActiveIndex((current) => current?.filter((i) => i !== index));
             }}
             style={[styles.editButtonPrimary, styles.editButtonSecondary]}
           >

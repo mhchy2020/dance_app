@@ -46,6 +46,10 @@ export const authController = {
         if (!userId) { 
             throw new ApiError(401, "Token expired")
         }
-        await authService.password(userId, password, newPassword);
+        const result = await authService.password(userId, password, newPassword);
+        return res.status(200).json({
+            success: true,
+            data: result
+        })
     }
 }

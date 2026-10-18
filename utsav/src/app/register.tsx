@@ -1,6 +1,7 @@
+import { COLORS } from "@/constants/color";
 import { useAuth } from "@/context/authContext";
 import Ionicons from "@react-native-vector-icons/ionicons";
-import { router } from "expo-router";
+import { Color, router } from "expo-router";
 import { useState } from "react";
 import {
   View,
@@ -26,6 +27,8 @@ export default function Register() {
 
   type InputName = "name" | "email" | "password" | "confirmPassword";
 
+  type ErrorForm = Record<keyof Form, string>;
+
   const [form, setForm] = useState<Form>({
     name: "",
     email: "",
@@ -49,62 +52,81 @@ export default function Register() {
     }));
   };
 
-  const handleEmailError = () => {
+  const handleBlur = (field: keyof Form) => {
     setIsFocused(null);
-    if (form.email.trim() === "") {
-      return;
-    }
-    if (!form.email.includes("@")) {
-      // setEmailError("Incorrect email type");
-      setErrorForm((prev) => ({
-        ...prev,
-        email: "Incorrect email type",
-      }));
+
+    const error = validateField(field, form, false);
+
+    setErrorForm((prev) => ({
+      ...prev,
+      [field]: error,
+    }));
+  };
+
+  const validateField = (
+    field: keyof Form,
+    values: Form,
+    showRequired: boolean,
+  ) => {
+    const value = values[field];
+    switch (field) {
+      case "name":
+        if (value.trim() === "") {
+          return showRequired ? "Name cannot be empty" : "";
+        }
+        return "";
+
+      case "email":
+        if (value.trim() === "") {
+          return showRequired ? "Email required" : "";
+        }
+        if (!value.includes("@")) {
+          return "Incorrect email type";
+        }
+        return "";
+
+      case "password":
+        if (value.trim() === "") {
+          return showRequired ? "Password is required" : "";
+        }
+        if (value.trim() !== "" && value.length < 8) {
+          return "password has to be atleast 8 characters";
+        }
+        return "";
+
+      case "confirmPassword":
+        if (value.trim() === "") {
+          return showRequired ? "Please confirm the password" : "";
+        }
+        if (value !== form.confirmPassword) {
+          return "Password doesn't match";
+        }
+        return "";
     }
   };
 
-  const handlePasswordError = () => {
-    setIsFocused(null);
-    if (form.password.trim() === "") {
-      return;
-    }
-    if (form.password.trim() !== "" && form.password.length < 8) {
-      setErrorForm((prev) => ({
-        ...prev,
-        password: "password has to be atleast 8 characters",
-      }));
-    }
-  };
-
-  const handleConfirmPassword = () => {
-    setIsFocused(null);
-    if (form.password !== form.confirmPassword) {
-      setErrorForm((prev) => ({
-        ...prev,
-        confirmPassword: "Password doesn't match",
-      }));
-    }
-  };
-
-  const validateForm = () => {
-    const errors: Record<string, string> = {};
-    const { name, email, password, confirmPassword } = errorForm;
-    if (name === "") {
-      errors.name = "Name cannot be empty";
-    }
-    if (email.trim() === "") {
-      errors.email = "Email is required";
-    }
-    if (password.trim() === "") {
-      errors.password = "Password is required";
-    }
-    if (confirmPassword.trim() === "") {
-      errors.confirmPassword = "Please confirm the password";
-    }
+  const validateForm = (): ErrorForm => {
+    return {
+      name: validateField("name", form, true),
+      email: validateField("email", form, true),
+      password: validateField("password", form, true),
+      confirmPassword: validateField("confirmPassword", form, true),
+    };
   };
 
   const handleSignIn = async () => {
+    const errors = validateForm();
+
+    setErrorForm(errors);
+
+    const hasErrors = Object.values(errors).some((error) => error !== "");
+
+    if (hasErrors) {
+      return;
+    }
+
     const { name, email, password } = form;
+
     try {
       await register(name, email, password);
       router.replace("/");
@@ -133,20 +155,26 @@ export default function Register() {
             <Text style={styles.headerTwo}>Sign in to explore more</Text>
             <Text style={styles.header}>Join the dance family now!</Text>
             <View style={styles.inputContainer}>
-              <Text>Name</Text>
+              <Text style={styles.fieldName}>Name</Text>
               <TextInput
                 style={[
                   styles.input,
                   isFocused === "name" && styles.focusedInput,
+                  errorForm.name !== "" && styles.errorInputField,
                 ]}
                 value={form.name}
+                cursorColor={COLORS.primary}
                 onChangeText={(text) => handleChange("name", text)}
                 onFocus={() => setIsFocused("name")}
-                onBlur={() => setIsFocused(null)}
+                onBlur={() => handleBlur("name")}
               />
+              {errorForm.name !== "" && (
+                <Text style={styles.errorText}>{errorForm.name}</Text>
+              )}
             </View>
+
             <View style={styles.inputContainer}>
-              <Text>Email</Text>
+              <Text style={styles.fieldName}>Email</Text>
               <TextInput
                 style={[
                   styles.input,
@@ -154,6 +182,8 @@ export default function Register() {
                   errorForm.email !== "" && styles.errorInputField,
                 ]}
                 value={form.email}
+                keyboardType="email-address"
+                cursorColor={COLORS.primary}
                 onChangeText={(text) => handleChange("email", text)}
                 onFocus={() => {
                   setErrorForm((prev) => ({
@@ -162,14 +192,14 @@ export default function Register() {
                   }));
                   setIsFocused("email");
                 }}
-                onBlur={handleEmailError}
+                onBlur={() => handleBlur("email")}
               />
               {errorForm.email !== "" && (
                 <Text style={styles.errorText}>{errorForm.email}</Text>
               )}
             </View>
             <View style={styles.inputContainer}>
-              <Text>Password</Text>
+              <Text style={styles.fieldName}>Password</Text>
               <TextInput
                 style={[
                   styles.input,
@@ -177,6 +207,7 @@ export default function Register() {
                   errorForm.password !== "" && styles.errorInputField,
                 ]}
                 value={form.password}
+                cursorColor={COLORS.primary}
                 onChangeText={(text) => handleChange("password", text)}
                 onFocus={() => {
                   setErrorForm((prev) => ({
@@ -185,7 +216,7 @@ export default function Register() {
                   }));
                   setIsFocused("password");
                 }}
-                onBlur={handlePasswordError}
+                onBlur={() => handleBlur("password")}
                 secureTextEntry
               />
               {errorForm.password !== "" && (
@@ -193,7 +224,7 @@ export default function Register() {
               )}
             </View>
             <View style={styles.inputContainer}>
-              <Text>Confirm Password</Text>
+              <Text style={styles.fieldName}>Confirm Password</Text>
               <TextInput
                 style={[
                   styles.input,
@@ -201,6 +232,7 @@ export default function Register() {
                   errorForm.confirmPassword !== "" && styles.errorInputField,
                 ]}
                 value={form.confirmPassword}
+                cursorColor={COLORS.primary}
                 onChangeText={(text) => handleChange("confirmPassword", text)}
                 onFocus={() => {
                   setErrorForm((prev) => ({
@@ -209,7 +241,7 @@ export default function Register() {
                   }));
                   setIsFocused("confirmPassword");
                 }}
-                onBlur={handleConfirmPassword}
+                onBlur={() => handleBlur("confirmPassword")}
                 secureTextEntry
               />
               {errorForm.confirmPassword !== "" && (
@@ -237,13 +269,13 @@ const styles = StyleSheet.create({
   },
   header: {
     fontSize: 50,
-    fontWeight: "bold",
-    color: "#af40ef",
+    fontFamily: "gantariBold",
+    color: COLORS.primary,
   },
   headerTwo: {
     fontSize: 20,
     color: "#93879d",
-    fontStyle: "italic",
+    fontFamily: "gantariRegular",
   },
   inputContainer: {
     gap: 5,
@@ -254,7 +286,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
     fontSize: 16,
+    fontFamily: "gantariRegular",
     borderColor: "#b5aaaa",
+  },
+  fieldName: {
+    fontFamily: "gantariRegular",
   },
   focusedInput: {
     boxShadow: "0 0 6px #b86de3",
@@ -274,19 +310,19 @@ const styles = StyleSheet.create({
   },
   signInText: {
     fontSize: 20,
-    fontFamily: "sans-serif",
-    fontWeight: "bold",
+    fontFamily: "gantariRegular",
     color: "#fff",
   },
   errorText: {
     color: "#ec1010",
+    fontFamily: "gantariRegular",
   },
   arrowContainer: {
     margin: 10,
     width: 40,
     padding: 10,
     borderRadius: 200,
-    backgroundColor: "#af40ef",
+    backgroundColor: COLORS.primary,
   },
   arrow: {
     fontSize: 20,

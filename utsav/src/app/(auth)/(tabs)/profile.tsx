@@ -20,23 +20,25 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import ExpandableView from "@/components/ExpandableView";
+import ProfilePictureModal from "@/components/ProfilePictureModal";
 
 export default function Profile() {
   const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
 
-  const [expanded, setExpanded] = useState<boolean>(false);
+  const [activeIndex, setActiveIndex] = useState<number[]>([]);
   const [email, setEmail] = useState<string | undefined>(user?.email);
   const [name, setName] = useState<string | undefined>(user?.name);
 
-  const iconRotation = useSharedValue<string>("0deg");
+  const [showModal, setShowModal] = useState<boolean>(false);
 
-  const animatedChevron = useAnimatedStyle(() => {
-    iconRotation.value = withSpring(`${!expanded ? 0 : 90}deg`, {
-      damping: 15,
-    });
-    return {};
-  });
+  const handleToggle = (index: number) => {
+    setActiveIndex((current) =>
+      current.includes(index)
+        ? current.filter((i) => i !== index)
+        : [...current, index],
+    );
+  };
 
   const handleLogOut = async () => {
     try {
@@ -45,6 +47,25 @@ export default function Profile() {
       console.log("[LOGOUT ERROR]: can't log out");
     }
   };
+
+  const handleShowModal = () => {
+    setShowModal(!showModal);
+  };
+
+  const fields = [
+    {
+      title: "Name",
+      icon: "person-outline",
+      input: name,
+      setInput: setName,
+    },
+    {
+      title: "Email",
+      icon: "mail-outline",
+      input: email,
+      setInput: setEmail,
+    },
+  ];
 
   return (
     <ScrollView
@@ -56,7 +77,10 @@ export default function Profile() {
           source={require("utsav/src/assets/profile_picture.jpg")}
           style={styles.profileImage}
         />
-        <Pressable style={styles.editProfilePhotoButton}>
+        <Pressable
+          style={styles.editProfilePhotoButton}
+          onPress={handleShowModal}
+        >
           <Ionicons name="pencil-sharp" size={20} color="#fff" />
         </Pressable>
       </View>
@@ -78,67 +102,45 @@ export default function Profile() {
       </Text>
 
       <View style={styles.accountContainer}>
-        <Pressable
-          style={styles.accountContainerOne}
-          onPress={() => {
-            setExpanded(!expanded);
-            animatedChevron;
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
+        {fields.map((field, index) => (
+          <Pressable
+            key={index}
+            style={styles.accountContainerOne}
+            onPress={() => {
+              handleToggle(index);
             }}
           >
-            <View style={styles.accountContainerTwo}>
-              <Ionicons name="person-outline" size={24} color="#b86de3" />
-              <Text style={styles.accountText}>Name</Text>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+              }}
+            >
+              <View style={styles.accountContainerTwo}>
+                <Ionicons name={field.icon as any} size={24} color="#b86de3" />
+                <Text style={styles.accountText}>{field.title}</Text>
+              </View>
+
+              <Animated.View
+                style={{
+                  transform: [
+                    { rotate: activeIndex.includes(index) ? "90deg" : "0deg" },
+                  ],
+                }}
+              >
+                <Ionicons name="chevron-forward" size={24} color="#b86de3" />
+              </Animated.View>
             </View>
 
-            <Animated.View style={{ transform: [{ rotate: iconRotation }] }}>
-              <Ionicons name="chevron-forward" size={24} color="#b86de3" />
-            </Animated.View>
-          </View>
-
-          <ExpandableView
-            expanded={expanded}
-            setExpanded={setExpanded}
-            input={name}
-            setInput={setName}
-          />
-        </Pressable>
-
-        <Pressable
-          style={styles.accountContainerOne}
-          onPress={() => {
-            setExpanded(!expanded);
-            animatedChevron;
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-            }}
-          >
-            <View style={styles.accountContainerTwo}>
-              <Ionicons name="mail-outline" size={24} color="#b86de3" />
-              <Text style={styles.accountText}>Email</Text>
-            </View>
-
-            <Animated.View style={{ transform: [{ rotate: iconRotation }] }}>
-              <Ionicons name="chevron-forward" size={24} color="#b86de3" />
-            </Animated.View>
-          </View>
-
-          <ExpandableView
-            expanded={expanded}
-            setExpanded={setExpanded}
-            input={email}
-            setInput={setEmail}
-          />
-        </Pressable>
+            <ExpandableView
+              index={index}
+              expanded={activeIndex.includes(index)}
+              setActiveIndex={setActiveIndex}
+              input={field.input}
+              setInput={field.setInput}
+            />
+          </Pressable>
+        ))}
 
         <Pressable
           style={[styles.accountContainerOne, { borderBottomWidth: 0 }]}
@@ -176,6 +178,7 @@ export default function Profile() {
           </>
         )}
       </Pressable>
+      <ProfilePictureModal isVisible={showModal} onClose={handleShowModal} />
     </ScrollView>
   );
 }

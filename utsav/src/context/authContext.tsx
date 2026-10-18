@@ -17,7 +17,6 @@ import {
   RegisterResponse,
 } from "@/types/user";
 
-import { jwtDecode } from "jwt-decode";
 import { router } from "expo-router";
 
 //CREATE a provider component
@@ -84,7 +83,13 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
       body: { name, email, password },
     });
 
-    const { user } = response.data;
+    const { user, tokens } = response.data;
+
+    await Promise.all([
+      AsyncStorage.setItem("accessToken", tokens.accessToken),
+      AsyncStorage.setItem("user", JSON.stringify(user)),
+      AsyncStorage.setItem("refreshToken", tokens.refreshToken),
+    ]);
     setUser(user);
   };
 

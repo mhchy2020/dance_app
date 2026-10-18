@@ -13,13 +13,13 @@ export const generateToken = {
 
     access: (userId: string) => {
         return jwt.sign({userId}, ACCESS_SECRET, {
-            expiresIn: "1m"
+            expiresIn: "15m"
         })
     },
 
     refresh: (userId: string) => {
         return jwt.sign({userId}, REFRESH_SECRET, {
-            expiresIn: "1m"
+            expiresIn: "7d"
         })
     }
 }

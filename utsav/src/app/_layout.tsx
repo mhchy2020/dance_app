@@ -11,6 +11,7 @@ export default function RootLayout() {
     gantariRegular: require("../assets/fonts/Gantari-Regular.ttf"),
     gantariSemiBold: require("../assets/fonts/Gantari-SemiBold.ttf"),
     gantariBold: require("../assets/fonts/Gantari-Bold.ttf"),
+    gantariItalic: require("../assets/fonts/Gantari-Italic.ttf"),
   });
   if (!loaded) {
     return <Loader />;

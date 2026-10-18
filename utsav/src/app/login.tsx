@@ -1,5 +1,6 @@
+import { COLORS } from "@/constants/color";
 import { useAuth } from "@/context/authContext";
-import { router } from "expo-router";
+import { Color, router } from "expo-router";
 import { useState } from "react";
 import {
   View,
@@ -19,13 +20,18 @@ export default function Login() {
     password: string;
   };
 
+  type ErrorForm = Record<keyof Form, string>;
+
   const [form, setForm] = useState<Form>({
     email: "",
     password: "",
   });
 
-  const [emailError, setEmailError] = useState<string>("");
-  const [passwordError, setPasswordError] = useState<string>("");
+  const [errorForm, setErrorForm] = useState<Form>({
+    email: "",
+    password: "",
+  });
+
   const [isFocused, setIsFocused] = useState<"email" | "password" | null>(null);
 
   const handleChange = (field: keyof Form, text: string) => {
@@ -35,61 +41,57 @@ export default function Login() {
     }));
   };
 
-  const handleEmailError = () => {
+  const handleBlur = (field: keyof Form) => {
     setIsFocused(null);
-    if (form.email.trim() === "") {
-      return;
-    }
-    if (!form.email.includes("@")) {
-      setEmailError("Incorrect email type");
+    const error = validateField(false, field, form);
+
+    setErrorForm((prev) => ({
+      ...prev,
+      [field]: error,
+    }));
+  };
+
+  const validateField = (
+    showRequired: boolean,
+    field: keyof Form,
+    values: Form,
+  ) => {
+    const value = values[field];
+    switch (field) {
+      case "email":
+        if (value.trim() === "") {
+          return showRequired ? "Email cannot be empty" : "";
+        }
+        if (!value.includes("@")) {
+          return "Incorrect email type";
+        }
+        return "";
+      case "password":
+        if (value.trim() === "") {
+          return showRequired ? "Password cannot be empty" : "";
+        }
+
+        if (value.trim() !== "" && value.length < 8) {
+          return "password has to be atleast 8 characters";
+        }
+        return "";
     }
   };
 
-  const handlePasswordError = () => {
-    setIsFocused(null);
-    if (form.password.trim() === "") {
-      return;
-    }
-    if (form.password.trim() !== "" && form.password.length < 8) {
-      setPasswordError("password has to be atleast 8 characters");
-    }
-  };
-
-  const validateForm = () => {
-    const { email, password } = form;
-    const errors: Record<string, string> = {};
-    if (emailError !== "") {
-      errors.email = emailError;
-    }
-
-    if (passwordError !== "") {
-      errors.password = passwordError;
-    }
-
-    if (email.trim() === "") {
-      errors.email = "Email is required";
-    }
-
-    if (password.trim() === "") {
-      errors.password = "Password is required";
-    }
-
-    return errors;
+  const validateForm = (): ErrorForm => {
+    return {
+      email: validateField(true, "email", form),
+      password: validateField(true, "password", form),
+    };
   };
 
   const handleLogin = async () => {
-    // console.log(form);ghj
-    const { email, password } = form;
-
-    // call validateForm here
     const errors = validateForm();
+    setErrorForm(errors);
+    const hasErrors = Object.values(errors).some((error) => error !== "");
+    if (hasErrors) return;
 
-    if (Object.keys(errors).length > 0) {
-      console.log("trouble logging in");
-      console.log(`${errors.email}, ${errors.password}`);
-      return;
-    }
-
+    const { email, password } = form;
     try {
       await login(email, password);
       router.replace("/");
@@ -105,56 +107,80 @@ export default function Login() {
         <Text style={styles.headerTwo}>Welcome back!</Text>
         <Text style={styles.header}>Login to your Account</Text>
         <View style={styles.inputContainer}>
-          <Text>Email</Text>
+          <Text style={styles.fieldName}>Email</Text>
           <TextInput
             style={[
               styles.input,
               isFocused === "email" && styles.focusedInput,
-              emailError && styles.errorInputField,
+              errorForm.email && styles.errorInputField,
             ]}
             value={form.email}
             onChangeText={(text) => handleChange("email", text)}
-            onBlur={handleEmailError}
+            onBlur={() => handleBlur("email")}
             onFocus={() => {
               setIsFocused("email");
-              setEmailError("");
+              setErrorForm((prev) => ({
+                ...prev,
+                email: "",
+              }));
             }}
           />
-          {emailError !== "" && (
-            <Text style={styles.errorText}>{emailError}</Text>
+          {errorForm.email !== "" && (
+            <Text style={styles.errorText}>{errorForm.email}</Text>
           )}
         </View>
         <View style={styles.inputContainer}>
-          <Text>Password</Text>
+          <Text style={styles.fieldName}>Password</Text>
           <TextInput
             style={[
               styles.input,
               isFocused === "password" && styles.focusedInput,
-              passwordError && styles.errorInputField,
+              errorForm.password && styles.errorInputField,
             ]}
             value={form.password}
             onChangeText={(text) => handleChange("password", text)}
-            onBlur={handlePasswordError}
+            onBlur={() => handleBlur("password")}
             onFocus={() => {
               setIsFocused("password");
-              setPasswordError("");
+              setErrorForm((prev) => ({
+                ...prev,
+                password: "",
+              }));
             }}
             secureTextEntry
           />
-          {passwordError !== "" && (
-            <Text style={styles.errorText}>{passwordError}</Text>
+          {errorForm.password !== "" && (
+            <Text style={styles.errorText}>{errorForm.password}</Text>
           )}
         </View>
+        <Pressable
+          style={{
+            flexDirection: "row",
+            justifyContent: "flex-end",
+            paddingVertical: 5,
+          }}
+        >
+          <Text
+            style={{
+              fontFamily: "gantariRegular",
+              color: COLORS.primary,
+              fontSize: 16,
+            }}
+          >
+            Forgot Password?
+          </Text>
+        </Pressable>
         <Pressable style={styles.loginButton} onPress={handleLogin}>
           <Text style={styles.loginText}>Log In</Text>
         </Pressable>
-        <Text style={{ alignSelf: "center" }}>OR</Text>
-        <Pressable
-          style={styles.loginButton}
-          onPress={() => router.push("/register")}
-        >
-          <Text style={styles.loginText}>Sign In</Text>
-        </Pressable>
+        <View style={styles.signInContainer}>
+          <Text style={{ fontSize: 15, fontFamily: "gantariRegular" }}>
+            Don't have an account?{" "}
+          </Text>
+          <Pressable onPress={() => router.push("/register")}>
+            <Text style={styles.signInText}>Sign In</Text>
+          </Pressable>
+        </View>
         {/* </View> */}
       </ScrollView>
     </SafeAreaView>
@@ -169,22 +195,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   header: {
+    fontFamily: "gantariBold",
     fontSize: 40,
-    fontWeight: "bold",
-    color: "#af40ef",
+    color: COLORS.primary,
   },
   headerTwo: {
     fontSize: 20,
     color: "#93879d",
-    fontStyle: "italic",
+    fontFamily: "gantariRegular",
   },
   input: {
     height: 50,
     paddingHorizontal: 20,
+    fontSize: 16,
+    fontFamily: "gantariRegular",
     borderWidth: 1,
     borderRadius: 10,
-    fontSize: 16,
     borderColor: "#b5aaaa",
+  },
+  fieldName: {
+    fontFamily: "gantariRegular",
   },
   inputContainer: {
     gap: 5,
@@ -207,10 +237,24 @@ const styles = StyleSheet.create({
   },
   loginText: {
     fontSize: 20,
-    fontWeight: "bold",
     color: "#fff",
+    fontFamily: "gantariRegular",
+  },
+  signInContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    padding: 10,
+    gap: 3,
+  },
+  signInText: {
+    color: COLORS.primary,
+    borderBottomWidth: 1,
+    borderColor: COLORS.primary,
+    fontSize: 16,
+    fontFamily: "gantariRegular",
   },
   errorText: {
     color: "#ec1010",
+    fontFamily: "gantariRegular",
   },
 });

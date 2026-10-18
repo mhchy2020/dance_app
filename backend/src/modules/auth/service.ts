@@ -20,8 +20,12 @@ export const authService = {
 
     const user = await authRepository.createUser(id, name, email, hashed);
 
+    const accessToken = generateToken.access(user.id);
+    const refreshToken = generateToken.refresh(user.id);
+
     return {
       message: "user successfully registered",
+      tokens: {accessToken, refreshToken},
       user,
     };
   },
@@ -82,9 +86,13 @@ export const authService = {
 
     await db.query(
       `Update users
-                    set password_hash = $1
-                    where id=$2`,
+       set password_hash = $1
+       where id=$2`,
       [newHashedPassword, userId],
     );
+
+    return {
+      message: "Password changed successfully"
+    }
   },
 };

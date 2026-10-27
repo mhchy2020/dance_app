@@ -14,10 +14,10 @@ export default function ProfilePictureModal({
 }: ModalProps) {
   return (
     <View>
-      <Modal visible={isVisible} transparent={true} animationType="slide">
+      <Modal visible={isVisible} transparent={true} animationType="fade">
         <Pressable style={{ flex: 1 }} onPress={onClose}></Pressable>
         <View style={styles.container}>
-          <View style={styles.modalBar}></View>
+          {/* <View style={styles.modalBar}></View> */}
           <View style={styles.buttonContainer}>
             <Pressable
               style={styles.button}
@@ -46,13 +46,12 @@ export default function ProfilePictureModal({
 
 const styles = StyleSheet.create({
   container: {
-    width: "100%",
     position: "absolute",
-    bottom: 0,
+    top: 240,
+    left: 100,
     padding: 10,
     backgroundColor: "#fff",
-    borderTopRightRadius: 18,
-    borderTopLeftRadius: 18,
+    borderRadius: 18,
   },
   modalBar: {
     height: "3%",

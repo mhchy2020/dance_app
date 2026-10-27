@@ -3,22 +3,16 @@ import Ionicons from "@react-native-vector-icons/ionicons";
 import { router } from "expo-router";
 import {
   Image,
-  LayoutChangeEvent,
   Pressable,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { COLORS } from "@/constants/color";
-import { useEffect, useRef, useState } from "react";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-} from "react-native-reanimated";
+import { useState } from "react";
+import Animated from "react-native-reanimated";
 import ExpandableView from "@/components/ExpandableView";
 import ProfilePictureModal from "@/components/ProfilePictureModal";
 
@@ -171,7 +165,7 @@ export default function Profile() {
       >
         {({ pressed }) => (
           <>
-            <Ionicons name="exit-outline" color="#b86de3" size={24} />
+            <Ionicons name="exit-outline" color={COLORS.primary} size={24} />
             <Text style={[styles.logOutText, pressed && styles.pressedtext]}>
               Log Out
             </Text>
@@ -189,7 +183,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   container: {
-    alignItems: "center",
+    // alignItems: "center",
   },
   header: {
     marginTop: 10,
@@ -201,6 +195,7 @@ const styles = StyleSheet.create({
     borderRadius: 100,
   },
   photoContainer: {
+    alignItems: "center",
     margin: 20,
   },
   editProfilePhotoButton: {
@@ -233,14 +228,15 @@ const styles = StyleSheet.create({
   },
   accountContainer: {
     padding: 10,
-    margin: 10,
-    width: "100%",
+    marginVertical: 10,
+    // width: "100%",
     backgroundColor: "#e3e3e3",
     borderRadius: 10,
-    boxShadow: "2px 2px 4px #b86de3",
+    // boxShadow: `2px 2px 4px ${COLORS.primary}`,
+    elevation: 2,
   },
   accountContainerOne: {
-    width: "100%",
+    // width: "100%",
     padding: 12,
     borderBottomColor: "#bdbcbc",
     borderBottomWidth: 2,
@@ -279,14 +275,14 @@ const styles = StyleSheet.create({
   },
   logOutButton: {
     flexDirection: "row",
-    justifyContent: "center",
+    // justifyContent: "center",
     alignItems: "center",
     gap: 10,
     height: 50,
     paddingHorizontal: 20,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#b86de3",
+    borderColor: COLORS.primary,
     // width: "100%",
   },
   pressedButton: {
@@ -296,7 +292,7 @@ const styles = StyleSheet.create({
   logOutText: {
     fontSize: 20,
     fontFamily: "gantariRegular",
-    color: "#b86de3",
+    color: COLORS.primary,
   },
   pressedtext: {
     color: "#fff",

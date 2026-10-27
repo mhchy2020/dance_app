@@ -62,7 +62,7 @@ export default function ProfilePictureModal() {
   return (
     <>
       <Pressable
-        style={[styles.arrowContainer, { marginTop: insets.top }]}
+        style={[styles.arrowContainer, { marginTop: insets.top + 10 }]}
         onPress={() => router.back()}
       >
         <Ionicons style={styles.arrow} name="arrow-back" />
@@ -197,6 +197,7 @@ const styles = StyleSheet.create({
     borderStyle: "dashed",
     borderWidth: 2,
     borderColor: "rgba(167, 164, 164, 0.5)",
+    padding: 20,
   },
   title: {
     fontFamily: "gantariBold",
@@ -282,6 +283,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
+    paddingVertical: 10,
   },
   button: {
     width: "48%",

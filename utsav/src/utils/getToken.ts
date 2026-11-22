@@ -1,34 +1,24 @@
-import { User } from "@/types/user";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as SecureStore from 'expo-secure-store';
 
-type tokenType = "accessToken" | "refreshToken";
 
-type storeItems = {
-  accessToken: string,
-  refreshToken: string,
-  user?: User
-}
-
-export const storeTokens = async (storeItems: storeItems) => {
-  
-  await Promise.all([
-    AsyncStorage.setItem("accessToken", storeItems.accessToken),
-    AsyncStorage.setItem("refreshToken", storeItems.refreshToken),
+export const tokenStorage = {
+  async getAccessToken() {
+    return SecureStore.getItemAsync("accessToken");
+  },
+  async saveAccessToken(value: string) {
+    await SecureStore.setItemAsync("accessToken", value);
+  },
+  async getRefreshToken() {
+    return SecureStore.getItemAsync("refreshToken");
+   
+  },
+  async saveRefreshToken(value: string) {
+    await SecureStore.setItemAsync("refreshToken", value);
+  },
+  async deleteTokens() {
+    await Promise.all([
+      SecureStore.deleteItemAsync("accessToken"),
+      SecureStore.deleteItemAsync("refreshToken"),
     ]);
-}
-
-export const getToken = async (tokenType: tokenType): Promise<string> => {
-  const token = await AsyncStorage.getItem(tokenType);
-  if (!token) {
-    throw new Error("tokens not found");
-  }
-  return token;
-};
-
-export const removeTokens = async () => {
-  await Promise.all([
-    AsyncStorage.removeItem("accessToken"),
-    AsyncStorage.removeItem("refreshToken"),
-    AsyncStorage.removeItem("user"),
-  ]);
+  },
 };

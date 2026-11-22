@@ -1,12 +1,14 @@
 import { ApiError } from "@/utils/ApiError";
-import { getToken, storeTokens } from "@/utils/getToken";
+import { tokenStorage } from "@/utils/getToken";
+// import { getToken, storeTokens } from "@/utils/getToken";
 
 const apiURL = "http://10.0.2.2:3000/api";
+// const apiURL = "http://10.142.34.77:3000/api";
 
 type requestOptions = {
   method?: "GET" | "POST" | "DELETE" | "PUT" | "PATCH";
   body?: unknown;
-  token?: string;
+  token?: string|null;
 };
 
 const fetchCall = async (route: string, options: requestOptions) => {
@@ -32,29 +34,19 @@ export const apiRequest = async <T>(
   route: string,
   options: requestOptions = {},
 ): Promise<T> => {
-  // const { method = "GET", body, token } = options;
-  // const response = await fetch(`${apiURL}${route}`, {
-  //     method,
-  //     headers: {
-  //         "Content-Type": "application/json",
-  //         ...(token ? {
-  //             Authorization: `Bearer ${token}`
-  //         } : {})
-  //     },
-  //     ...(body !== undefined && body !== null ? {
-  //         body: JSON.stringify(body)
-  //     } : {})
-  // })
+
+  console.log("[Calling route]:", route);
 
   let response = await fetchCall(`${apiURL}${route}`, options);
+  console.log(response);
 
   let data = await response.json();
-  console.log("[API_REQUEST]", data);
+  console.log("[API_REQUEST_RESPONSE]", data);
 
   if (response.status === 401 && data.code === "ACCESS_TOKEN_EXPIRED") {
     console.log("access token has expired, getting a new one");
 
-    const refreshToken = await getToken("refreshToken");
+    const refreshToken = await tokenStorage.getRefreshToken();
     response = await fetchCall(`${apiURL}/auth/refresh`, {
       method: "POST",
       body: { refreshToken: refreshToken },
@@ -66,17 +58,14 @@ export const apiRequest = async <T>(
       throw new ApiError(401, data.message, data.code);
     }
 
-    // store new access token and a rotated refresh token
-    storeTokens({
-      accessToken: data.accessToken,
-      refreshToken: data.refreshToken,
-    });
+    tokenStorage.saveAccessToken(data.data.accessToken)
+    tokenStorage.saveRefreshToken(data.data.refreshToken)
 
     //call the api again
-    options = { ...options, token: data.accessToken };
+    options = { ...options, token: data.data.accessToken };
     response = await fetchCall(`${apiURL}${route}`, options);
     data = await response.json();
-    console.log(`${apiURL}/${route}`, data);
+    console.log(`${apiURL}${route}`, data);
   }
 
   if (!response.ok) {

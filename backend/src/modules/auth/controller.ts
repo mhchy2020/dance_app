@@ -51,5 +51,13 @@ export const authController = {
             success: true,
             data: result
         })
+    },
+    me: async (req: Request, res: Response) => { 
+        const userId = req.user?.userId;
+        const result = await authService.me(userId);
+        return res.status(200).json({
+            success: true,
+            data: result
+        })
     }
 }

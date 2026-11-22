@@ -9,15 +9,16 @@ import {
   useEffect,
   useState,
 } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   User,
   authContextType,
   LoginResponse,
   RegisterResponse,
-} from "@/types/user";
+  userProfileResponse,
+} from "@/types/apiResponseTypes";
 
 import { router } from "expo-router";
+import { tokenStorage } from "@/utils/getToken";
 
 //CREATE a provider component
 // --> this defines the variable or states that needs to be shared globally across the components
@@ -33,29 +34,28 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsloading] = useState<boolean>(true);
 
   useEffect(() => {
-    restoreSession();
-    // getItems();
-  }, []);
+    const fetchUser = async () => {
+      try {
+        // const token = await getToken("accessToken");
+        const token = await tokenStorage.getAccessToken();
+        if (!token) {
+          return;
+        }
 
-  const restoreSession = async () => {
-    //get the items from asyncStorage
-    try {
-      const [user, accessToken, refreshToken] = await Promise.all([
-        AsyncStorage.getItem("user"),
-        AsyncStorage.getItem("accessToken"),
-        AsyncStorage.getItem("refreshToken"),
-      ]);
-      console.log("[ASYNC STORAGE USER]:", user);
-      // if found -> set the user which sets is LoggedIn as true
-      if (user && accessToken && refreshToken) {
-        setUser(JSON.parse(user));
+        const response = await apiRequest<userProfileResponse>("/auth/me", {
+          method: "GET",
+          token: token,
+        });
+        const { user } = response.data;
+        setUser(user);
+      } catch (err) {
+        console.log("Failed to fetch user", err);
+      } finally {
+        setIsloading(false);
       }
-    } catch (err) {
-      console.log("[ASYNC STORAGE ERROR]", err);
-    } finally {
-      setIsloading(false);
-    }
-  };
+    };
+    fetchUser();
+  }, []);
 
   const login = async (email: string, password: string) => {
     const response = await apiRequest<LoginResponse>("/auth/login", {
@@ -68,12 +68,8 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
 
     const { user, accessToken, refreshToken } = response.data;
 
-    await Promise.all([
-      AsyncStorage.setItem("accessToken", accessToken),
-      AsyncStorage.setItem("user", JSON.stringify(user)),
-      AsyncStorage.setItem("refreshToken", refreshToken),
-    ]);
-
+    tokenStorage.saveAccessToken(accessToken);
+    tokenStorage.saveRefreshToken(refreshToken);
     setUser(user);
   };
 
@@ -86,19 +82,15 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     const { user, tokens } = response.data;
 
     await Promise.all([
-      AsyncStorage.setItem("accessToken", tokens.accessToken),
-      AsyncStorage.setItem("user", JSON.stringify(user)),
-      AsyncStorage.setItem("refreshToken", tokens.refreshToken),
+      tokenStorage.saveAccessToken(tokens.accessToken),
+      tokenStorage.saveRefreshToken(tokens.refreshToken),
     ]);
+
     setUser(user);
   };
 
   const logout = async () => {
-    await Promise.all([
-      AsyncStorage.removeItem("accessToken"),
-      AsyncStorage.removeItem("refreshToken"),
-      AsyncStorage.removeItem("user"),
-    ]);
+    tokenStorage.deleteTokens();
     router.replace("/login");
   };
 

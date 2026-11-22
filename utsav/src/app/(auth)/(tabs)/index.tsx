@@ -2,7 +2,7 @@ import Slider from "@/components/Slider";
 import { data } from "@/data/sliderImages";
 import { COLORS } from "@/constants/color";
 import Ionicons from "@react-native-vector-icons/ionicons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -13,13 +13,31 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import EventCard from "@/components/eventCard";
+import { router } from "expo-router";
+import { useAuth } from "@/context/authContext";
+import { apiRequest } from "@/api/client";
+import { getEventsResponse } from "@/types/apiResponseTypes";
 
 export default function Index() {
   const insets = useSafeAreaInsets();
 
+  const { user } = useAuth();
+
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   const handleClearSearch = () => setSearchQuery("");
+
+  const getEvents = async () => {
+    const result = await apiRequest<getEventsResponse>("/events", {
+      method: "GET",
+    });
+    const events = result.data;
+    console.log(events);
+  };
+
+  useEffect(() => {
+    getEvents();
+  }, []);
 
   return (
     <ScrollView
@@ -33,7 +51,6 @@ export default function Index() {
           <Text style={styles.headerThree}>Less scroll. More scroll</Text>
           <View style={{ width: "70%" }}>
             <Text style={styles.headerTwo}>FIND YOUR NEXT MOVE</Text>
-            {/* <Text style={styles.headerTwo}>NEXT MOVE.</Text> */}
           </View>
 
           <Text style={styles.headerThree}>
@@ -43,7 +60,8 @@ export default function Index() {
         <View style={styles.searchBar}>
           <View style={styles.searchContainer}>
             <TextInput
-              placeholder="search"
+              placeholder="Events, styles & venues"
+              placeholderTextColor={COLORS.textPrimary}
               cursorColor={COLORS.primary}
               style={styles.searchInput}
               value={searchQuery}
@@ -62,7 +80,40 @@ export default function Index() {
         </View>
       </View>
 
-      <View style={{}}>
+      {user?.role === "admin" && (
+        <View style={styles.adminContainer}>
+          <Text
+            style={{
+              fontFamily: "gantariRegular",
+              color: COLORS.textPrimary,
+              fontSize: 13,
+            }}
+          >
+            ADMIN ACCESS
+          </Text>
+          <Pressable
+            onPress={() => router.push("/dashboard")}
+            style={styles.adminButton}
+          >
+            <View style={{ flexDirection: "row", gap: 15 }}>
+              <Ionicons name="shield-half-outline" color="#fff" size={20} />
+              <Text
+                style={{
+                  color: "#fff",
+                  fontFamily: "gantariRegular",
+                  fontSize: 17,
+                }}
+              >
+                Admin Dashboard
+              </Text>
+            </View>
+
+            <Ionicons name="arrow-forward-outline" size={20} color={"#fff"} />
+          </Pressable>
+        </View>
+      )}
+
+      <View>
         <View
           style={{
             flexDirection: "row",
@@ -116,7 +167,6 @@ export default function Index() {
           fontSize: 24,
           fontFamily: "gantariBold",
           letterSpacing: 0.5,
-          // color: "rgba(0, 0, 0, 0.65)",
         }}
       >
         EVENT HIGHLIGHTS
@@ -126,7 +176,6 @@ export default function Index() {
         style={{
           fontSize: 20,
           fontFamily: "gantariBold",
-          // color: "rgba(0, 0, 0, 0.65)",
         }}
       >
         Meet the Community
@@ -150,7 +199,6 @@ const styles = StyleSheet.create({
     gap: 15,
     padding: 10,
     borderRadius: 20,
-    // boxShadow: "1px 3px 3px rgba(0, 0, 0, 0.13)",
   },
   backgroundGradient: {
     position: "absolute",
@@ -182,8 +230,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
     padding: 10,
-    // backgroundColor: "#fff",
-    backgroundColor: "#dcdcdc",
+    backgroundColor: "#F3F4F6",
     borderRadius: 20,
   },
   searchContainer: {
@@ -205,6 +252,21 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 40,
     backgroundColor: COLORS.primary,
+  },
+  adminContainer: {
+    gap: 8,
+    paddingHorizontal: 10,
+  },
+  adminButton: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 15,
+
+    borderRadius: 10,
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+    borderWidth: 1,
   },
   upComingContainer: {
     padding: 10,

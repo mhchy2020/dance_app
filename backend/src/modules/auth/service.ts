@@ -95,4 +95,8 @@ export const authService = {
       message: "Password changed successfully"
     }
   },
+  async me(userId: string|undefined) { 
+    const result = await db.query(`SELECT id, email, name, role FROM users WHERE id=$1`, [userId]);
+    return { user: result.rows[0] || null }
+  }
 };

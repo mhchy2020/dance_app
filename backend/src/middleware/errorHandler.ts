@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { ApiError } from "../utils/ApiError.ts";
 
 export const errorHandler =  ( err: Error, req: Request, res: Response, next: NextFunction ) => {
-    console.error(err);
+    console.error('[ERROR HANDLER]',err);
 
     let statusCode: number = 500;
     let code: string | undefined;

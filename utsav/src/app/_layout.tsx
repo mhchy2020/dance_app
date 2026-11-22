@@ -1,6 +1,5 @@
 import { Stack } from "expo-router";
 import { useFonts } from "expo-font";
-// import { useFonts, Gantari_400Regular } from "@expo-google-fonts/gantari";
 import { StatusBar } from "expo-status-bar";
 import AuthProvider from "@/context/authContext";
 import Loader from "@/components/Loader";
@@ -12,6 +11,7 @@ export default function RootLayout() {
     gantariSemiBold: require("../assets/fonts/Gantari-SemiBold.ttf"),
     gantariBold: require("../assets/fonts/Gantari-Bold.ttf"),
     gantariItalic: require("../assets/fonts/Gantari-Italic.ttf"),
+    gantariExtraBold: require("../assets/fonts/Gantari-ExtraBold.ttf"),
   });
   if (!loaded) {
     return <Loader />;
@@ -19,7 +19,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <Stack screenOptions={{ headerShown: false }} />
-      <StatusBar style="dark" />
+      <StatusBar style="auto" />
     </AuthProvider>
   );
 }

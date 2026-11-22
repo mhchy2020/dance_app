@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   title: {
-    fontFamily: "gantariBold",
+    fontFamily: "gantariExtraBold",
     color: "#fff",
     fontSize: 30,
   },

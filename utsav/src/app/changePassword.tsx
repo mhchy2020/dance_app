@@ -3,9 +3,9 @@ import Loader from "@/components/Loader";
 import AlertBox from "@/components/Modal";
 import { COLORS } from "@/constants/color";
 import { useAuth } from "@/context/authContext";
-import { refreshResponse } from "@/types/user";
+import { refreshResponse } from "@/types/apiResponseTypes";
 import { ApiError } from "@/utils/ApiError";
-import { getToken, storeTokens } from "@/utils/getToken";
+import { tokenStorage } from "@/utils/getToken";
 import Ionicons from "@react-native-vector-icons/ionicons";
 import { router } from "expo-router";
 import { useRef, useState } from "react";
@@ -57,7 +57,7 @@ export default function ChangePassword() {
     }
 
     try {
-      const accessToken = await getToken("accessToken");
+      const accessToken = await tokenStorage.getAccessToken();
       const response = await apiRequest<refreshResponse>("/auth/password", {
         method: "PATCH",
         token: accessToken,

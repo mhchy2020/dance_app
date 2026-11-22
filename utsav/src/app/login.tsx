@@ -10,10 +10,14 @@ import {
   Pressable,
   ScrollView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 export default function Login() {
   const { login } = useAuth();
+  const insets = useSafeAreaInsets();
 
   type Form = {
     email: string;
@@ -101,89 +105,81 @@ export default function Login() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.container}>
-        {/* <View style={styles.container}> */}
-        <Text style={styles.headerTwo}>Welcome back!</Text>
-        <Text style={styles.header}>Login to your Account</Text>
-        <View style={styles.inputContainer}>
-          <Text style={styles.fieldName}>Email</Text>
-          <TextInput
-            style={[
-              styles.input,
-              isFocused === "email" && styles.focusedInput,
-              errorForm.email && styles.errorInputField,
-            ]}
-            value={form.email}
-            onChangeText={(text) => handleChange("email", text)}
-            onBlur={() => handleBlur("email")}
-            onFocus={() => {
-              setIsFocused("email");
-              setErrorForm((prev) => ({
-                ...prev,
-                email: "",
-              }));
-            }}
-          />
-          {errorForm.email !== "" && (
-            <Text style={styles.errorText}>{errorForm.email}</Text>
-          )}
-        </View>
-        <View style={styles.inputContainer}>
-          <Text style={styles.fieldName}>Password</Text>
-          <TextInput
-            style={[
-              styles.input,
-              isFocused === "password" && styles.focusedInput,
-              errorForm.password && styles.errorInputField,
-            ]}
-            value={form.password}
-            onChangeText={(text) => handleChange("password", text)}
-            onBlur={() => handleBlur("password")}
-            onFocus={() => {
-              setIsFocused("password");
-              setErrorForm((prev) => ({
-                ...prev,
-                password: "",
-              }));
-            }}
-            secureTextEntry
-          />
-          {errorForm.password !== "" && (
-            <Text style={styles.errorText}>{errorForm.password}</Text>
-          )}
-        </View>
-        <Pressable
+    <ScrollView
+      contentContainerStyle={[styles.container, { marginTop: insets.top }]}
+    >
+      <Text style={styles.headerTwo}>Welcome back!</Text>
+      <Text style={styles.header}>Login to your Account</Text>
+      <View style={styles.inputContainer}>
+        <Text style={styles.fieldName}>Email</Text>
+        <TextInput
+          style={[styles.input, errorForm.email && styles.errorInputField]}
+          cursorColor={COLORS.primary}
+          value={form.email}
+          onChangeText={(text) => handleChange("email", text)}
+          onBlur={() => handleBlur("email")}
+          onFocus={() => {
+            setIsFocused("email");
+            setErrorForm((prev) => ({
+              ...prev,
+              email: "",
+            }));
+          }}
+        />
+        {errorForm.email !== "" && (
+          <Text style={styles.errorText}>{errorForm.email}</Text>
+        )}
+      </View>
+      <View style={styles.inputContainer}>
+        <Text style={styles.fieldName}>Password</Text>
+        <TextInput
+          style={[styles.input, errorForm.password && styles.errorInputField]}
+          cursorColor={COLORS.primary}
+          value={form.password}
+          onChangeText={(text) => handleChange("password", text)}
+          onBlur={() => handleBlur("password")}
+          onFocus={() => {
+            setIsFocused("password");
+            setErrorForm((prev) => ({
+              ...prev,
+              password: "",
+            }));
+          }}
+          secureTextEntry
+        />
+        {errorForm.password !== "" && (
+          <Text style={styles.errorText}>{errorForm.password}</Text>
+        )}
+      </View>
+      <Pressable
+        style={{
+          flexDirection: "row",
+          justifyContent: "flex-end",
+          paddingVertical: 5,
+        }}
+      >
+        <Text
           style={{
-            flexDirection: "row",
-            justifyContent: "flex-end",
-            paddingVertical: 5,
+            fontFamily: "gantariRegular",
+            color: COLORS.primary,
+            fontSize: 16,
           }}
         >
-          <Text
-            style={{
-              fontFamily: "gantariRegular",
-              color: COLORS.primary,
-              fontSize: 16,
-            }}
-          >
-            Forgot Password?
-          </Text>
+          Forgot Password?
+        </Text>
+      </Pressable>
+      <Pressable style={styles.loginButton} onPress={handleLogin}>
+        <Text style={styles.loginText}>Log In</Text>
+      </Pressable>
+      <View style={styles.signInContainer}>
+        <Text style={{ fontSize: 15, fontFamily: "gantariRegular" }}>
+          Don't have an account?{" "}
+        </Text>
+        <Pressable onPress={() => router.push("/register")}>
+          <Text style={styles.signInText}>Sign In</Text>
         </Pressable>
-        <Pressable style={styles.loginButton} onPress={handleLogin}>
-          <Text style={styles.loginText}>Log In</Text>
-        </Pressable>
-        <View style={styles.signInContainer}>
-          <Text style={{ fontSize: 15, fontFamily: "gantariRegular" }}>
-            Don't have an account?{" "}
-          </Text>
-          <Pressable onPress={() => router.push("/register")}>
-            <Text style={styles.signInText}>Sign In</Text>
-          </Pressable>
-        </View>
-        {/* </View> */}
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -193,6 +189,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 10,
     paddingHorizontal: 20,
+    backgroundColor: "#fff",
   },
   header: {
     fontFamily: "gantariBold",
@@ -201,26 +198,25 @@ const styles = StyleSheet.create({
   },
   headerTwo: {
     fontSize: 20,
-    color: "#93879d",
+    color: COLORS.textPrimary,
     fontFamily: "gantariRegular",
   },
   input: {
     height: 50,
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
     fontSize: 16,
     fontFamily: "gantariRegular",
-    borderWidth: 1,
     borderRadius: 10,
-    borderColor: "#b5aaaa",
+    backgroundColor: COLORS.secondary,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
   fieldName: {
     fontFamily: "gantariRegular",
+    color: COLORS.textPrimary,
   },
   inputContainer: {
     gap: 5,
-  },
-  focusedInput: {
-    boxShadow: "0 0 6px #b86de3",
   },
   errorInputField: {
     borderColor: "#e23333",
@@ -233,7 +229,7 @@ const styles = StyleSheet.create({
     height: 50,
     paddingHorizontal: 20,
     borderRadius: 30,
-    backgroundColor: "#b86de3",
+    backgroundColor: COLORS.primary,
   },
   loginText: {
     fontSize: 20,

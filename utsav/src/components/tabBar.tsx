@@ -23,13 +23,6 @@ export default function MyTabBar({
     <View style={[styles.barContainer, { bottom: insets.bottom }]}>
       {state.routes.map((route, index) => {
         const { options } = descriptors[route.key];
-        // console.log(options);
-        // const label =
-        //   options.tabBarLabel !== undefined
-        //     ? options.tabBarLabel
-        //     : options.title !== undefined
-        //       ? options.title
-        //       : route.name;
 
         const label = options.title !== undefined ? options.title : route.name;
 
@@ -40,16 +33,6 @@ export default function MyTabBar({
             type: "tabPress",
             target: route.key,
             canPreventDefault: true,
-            // data: {
-            //   behavior: {
-            //     scrollToTop:
-            //       isFocused &&
-            //       options.tabBarRepeatedPressBehavior?.scrollToTop !== false,
-            //     popToTop:
-            //       isFocused &&
-            //       options.tabBarRepeatedPressBehavior?.popToTop !== false,
-            //   },
-            // },
           });
 
           if (!isFocused && !event.defaultPrevented) {
@@ -96,13 +79,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     margin: 10,
     padding: 5,
-    gap: 20,
+    gap: 10,
     backgroundColor: "#fff",
     justifyContent: "center",
     alignSelf: "center",
-    borderRadius: 30,
-    boxShadow: "0 0 10px rgba(207, 139, 231, 0.78)",
-    opacity: 0.9,
+    borderRadius: 25,
+    boxShadow: "0px 8px 10px rgba(0, 0, 0, 0.29)",
+    // opacity: 0.9,
   },
   itemContainer: {
     alignItems: "center",
